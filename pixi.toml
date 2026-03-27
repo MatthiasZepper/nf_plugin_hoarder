@@ -1,0 +1,32 @@
+[workspace]
+name = "nf-plugin-hoarder"
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64", "osx-64", "osx-arm64"]
+
+[tasks]
+# General tasks
+list-plugins = "python nf_plugin_hoarder_modern.py --help"
+
+[dependencies]
+python = ">=3.11"
+
+# --- LEGACY FEATURE (Older Nextflow and static JSON) ---
+[feature.legacy.dependencies]
+nextflow = "<=25.04.6"
+packaging = ">=23.0"
+
+[feature.legacy.tasks]
+hoard = "python nf_plugin_hoarder_pre25.10.py"
+
+# --- MODERN FEATURE (Nextflow 25.10 and newer, Plugin registry) ---
+[feature.modern.dependencies]
+nextflow = ">=25.10.0"
+requests = ">=2.31.0"
+
+[feature.modern.tasks]
+hoard = "python nf_plugin_hoarder_25.10later.py"
+
+# --- ENVIRONMENT DEFINITIONS ---
+[environments]
+legacy = ["legacy"]
+modern = ["modern"]

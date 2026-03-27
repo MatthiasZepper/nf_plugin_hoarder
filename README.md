@@ -10,36 +10,42 @@ However, this recommendation falls short, when there are roughly 30 workflows, e
 
 ### Quick start using uv
 
-The easiest way to run the hoarder without managing Python environments is using [`uv`](https://github.com/astral-sh/uv) as it will automatically handle the script's dependency.
+If you already have Python and Nextflow installed on your machine, you can use [`uv`](https://github.com/astral-sh/uv) as it will automatically handle each script's dependencies.
+
+Choose the script based on the Nextflow version of the HPC:
+
+- `nf_plugin_hoarder_pre25.10.py`: for Nextflow versions before `25.10`
+- `nf_plugin_hoarder_25.10later.py`: for Nextflow `25.10` and later (registry API based)
 
 To download the latest 3 versions of selected plugins and archive them for easier transfer:
 
 ```Bash
-uv run nf_plugin_hoarder.py -p nf-schema nf-tower nf-prov -n 3 -a -c
+uv run nf_plugin_hoarder_pre25.10.py -p nf-schema nf-tower nf-prov -n 3 -a -c
+uv run nf_plugin_hoarder_25.10later.py -p nf-schema nf-tower nf-prov -n 3 -a -c
 ```
 
-You can also directly run the plugin hoarder from the repository
+You can also run directly from GitHub raw URLs:
 
 ```Bash
-uv run https://raw.githubusercontent.com/MatthiasZepper/nf_plugin_hoarder/main/nf_plugin_hoarder.py -p nf-schema nf-tower nf-prov -n 3 -a -c
+uv run https://raw.githubusercontent.com/MatthiasZepper/nf_plugin_hoarder/main/nf_plugin_hoarder_pre25.10.py -p nf-schema nf-tower nf-prov -n 3 -a -c
+uv run https://raw.githubusercontent.com/MatthiasZepper/nf_plugin_hoarder/main/nf_plugin_hoarder_25.10later.py -p nf-schema nf-tower nf-prov -n 3 -a -c
 ```
 
 ### Proper setup with pixi
 
-If you prefer [`pixi`](https://pixi.prefix.dev/latest/), you can create a reproducible environment that includes both Python dependencies and Nextflow itself:
+With [`pixi`](https://pixi.prefix.dev/latest/), you can cleanly create a reproducible environment that includes Python dependencies and Nextflow itself. It uses the contained `pixi.toml`.
 
-- Initialize pixi:
+To run the modern hoarder:
 
-    ```Bash
-    pixi init
-    pixi add python packaging nextflow
-    ```
+```Bash
+pixi run -e modern hoard -p nf-schema -n 3 -a -c
+```
 
-    Run the hoarder:
+To run the Legacy hoarder:
 
-    ```Bash
-    pixi run python nf_plugin_hoarder.py --archive --clean
-    ```
+```Bash
+pixi run -e legacy hoard -p nf-tower -n 5
+```
 
 ## Usage options
 
@@ -94,4 +100,4 @@ java.util.UnknownFormatConversionException: Conversion = '4'
         at nextflow.cli.CmdRun.run(CmdRun.groovy:363)
         at nextflow.cli.Launcher.run(Launcher.groovy:515)
         at nextflow.cli.Launcher.main(Launcher.groovy:675)
-``` 
+```
