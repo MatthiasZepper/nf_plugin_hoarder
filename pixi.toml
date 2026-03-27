@@ -18,7 +18,7 @@ nextflow = "<=25.04.6"
 [feature.legacy.tasks]
 hoard = "python nf_plugin_hoarder_pre25.10.py"
 
-# --- MODERN FEATURE (Nextflow 25.10 and newer, Plugin registry) ---
+# --- MODERN FEATURE (Nextflow 25.10+, registry API for versions) ---
 [feature.modern.dependencies]
 nextflow = ">=25.10.0"
 requests = ">=2.31.0"

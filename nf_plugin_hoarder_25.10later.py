@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 # /// script
 # dependencies = [
-#   "requests",
 #   "packaging",
+#   "requests",
 # ]
 # ///
 
 import argparse
 import os
 import shutil
+import subprocess
 import sys
 import tarfile
-import zipfile
-import tempfile
 from datetime import datetime
 from pathlib import Path
 
@@ -57,7 +56,8 @@ def hoard():
     print("\n🐿️  nf-plugin-hoarder")
     print("=" * 40)
     print(f"Target: {plugin_dir}")
-    if args.dry_run: print("--- DRY RUN MODE ---")
+    if args.dry_run:
+        print("--- DRY RUN MODE ---")
     print("=" * 40)
 
     if args.clean and not args.archive:
@@ -65,6 +65,9 @@ def hoard():
 
     if not plugin_dir.exists() and not args.dry_run:
         plugin_dir.mkdir(parents=True, exist_ok=True)
+
+    env = os.environ.copy()
+    env["NXF_PLUGINS_DIR"] = str(plugin_dir)
 
     for plugin_id in args.plugins:
         print(f"🔍 Checking: {plugin_id}")
@@ -74,13 +77,12 @@ def hoard():
             releases.sort(key=lambda item: Version(item.get("version", "0.0.0")), reverse=True)
 
             if not releases:
-                print(f"  ⚠️  No releases found.")
+                print("  ⚠️  No releases found.")
                 continue
 
             for rel in releases[: args.limit]:
                 version = rel.get("version")
-                download_url = rel.get("url")
-                
+
                 # Nextflow expects: <outdir>/<plugin>-<version>/MANIFEST.MF
                 target_plugin_path = plugin_dir / f"{plugin_id}-{version}"
                 
@@ -88,41 +90,13 @@ def hoard():
                     print(f"  ✅ {version} cached.")
                     continue
 
+                cmd = ["nextflow", "plugin", "install", f"{plugin_id}@{version}"]
                 if args.dry_run:
-                    print(f"  [DRY-RUN] Would download {version}")
+                    print(f"  [DRY-RUN] {' '.join(cmd)}")
                     continue
 
-                print(f"  📥 Downloading {version}...", end="\r")
-                with tempfile.TemporaryDirectory() as tmp_dir:
-                    tmp_zip = Path(tmp_dir) / "plugin.zip"
-                    
-                    # Download
-                    with requests.get(download_url, stream=True, timeout=60) as r:
-                        r.raise_for_status()
-                        with open(tmp_zip, "wb") as f:
-                            shutil.copyfileobj(r.raw, f)
-
-                    if not zipfile.is_zipfile(tmp_zip):
-                        print(f"  ❌ Error: {version} download is not a valid ZIP file.")
-                        os.remove(tmp_zip)
-                        continue
-                    
-                    # Smart Extract
-                    with zipfile.ZipFile(tmp_zip, "r") as zip_ref:
-                        # Extract to a temp folder to check structure
-                        extract_path = Path(tmp_dir) / "extracted"
-                        zip_ref.extractall(extract_path)
-                        
-                        # Find the actual content (handle nested folder vs flat zip)
-                        top_level = list(extract_path.iterdir())
-                        if len(top_level) == 1 and top_level[0].is_dir():
-                            # ZIP contained a folder (standard), move its contents
-                            shutil.move(str(top_level[0]), str(target_plugin_path))
-                        else:
-                            # ZIP was flat, move the whole extract_path
-                            shutil.move(str(extract_path), str(target_plugin_path))
-                
-                print(f"  📥 Downloaded {version} (Done)   ")
+                print(f"  > {plugin_id}@{version}")
+                subprocess.run(cmd, env=env, check=True, stdout=subprocess.DEVNULL)
 
         except Exception as e:
             print(f"  ❌ Error fetching {plugin_id}: {e}")
