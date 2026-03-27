@@ -73,7 +73,6 @@ def hoard():
             # Valid versions are ordered semantically first; invalid ones follow in text order.
             invalid_versions = []
             valid_rels = []
-            invalid_rels = []
 
             for release in plugin.get("releases", []):
                 version_str = release.get("version", "")
@@ -81,17 +80,14 @@ def hoard():
                     valid_rels.append((Version(version_str), release))
                 except InvalidVersion:
                     invalid_versions.append(version_str)
-                    invalid_rels.append(release)
 
             sorted_valid_rels = [release for _, release in sorted(valid_rels, key=lambda item: item[0], reverse=True)]
-            sorted_invalid_rels = sorted(invalid_rels, key=lambda release: release.get("version", ""), reverse=True)
-            sorted_rels = sorted_valid_rels + sorted_invalid_rels
 
             if invalid_versions:
                 unique_invalid = sorted(set(invalid_versions))
                 print(f"Warning: Plugin '{plugin.get('id')}' contains non-PEP440 versions: {', '.join(unique_invalid)}")
 
-            for rel in sorted_rels[:args.limit]:
+            for rel in sorted_valid_rels[:args.limit]:
                 targets.append((plugin.get("id"), rel['version']))
 
     if not targets:

@@ -16,7 +16,7 @@ from datetime import datetime
 from pathlib import Path
 
 import requests
-from packaging.version import Version
+from packaging.version import InvalidVersion, Version
 
 # Constants
 REGISTRY_API = "https://registry.nextflow.io/api/v1/plugins"
@@ -73,14 +73,31 @@ def hoard():
         print(f"🔍 Checking: {plugin_id}")
         try:
             releases = fetch_plugin_metadata(plugin_id)
-            # Sort by Version object (Semantic Versioning)
-            releases.sort(key=lambda item: Version(item.get("version", "0.0.0")), reverse=True)
 
             if not releases:
                 print("  ⚠️  No releases found.")
                 continue
 
-            for rel in releases[: args.limit]:
+            # Keep invalid/non-PEP440 versions from crashing the sort.
+            # Valid versions are ordered semantically first; invalid ones follow in text order.
+            invalid_versions = []
+            valid_rels = []
+
+            for release in releases:
+                version_str = release.get("version", "")
+                try:
+                    valid_rels.append((Version(version_str), release))
+                except InvalidVersion:
+                    invalid_versions.append(version_str)
+
+            sorted_valid_rels = [release for _, release in sorted(valid_rels, key=lambda item: item[0], reverse=True)]
+
+            if invalid_versions:
+                unique_invalid = sorted(set(invalid_versions))
+                print(f"Warning: Plugin ' {plugin_id}' contains non-PEP440 versions: {', '.join(unique_invalid)}")
+
+
+            for rel in sorted_valid_rels[: args.limit]:
                 version = rel.get("version")
 
                 # Nextflow expects: <outdir>/<plugin>-<version>/MANIFEST.MF
