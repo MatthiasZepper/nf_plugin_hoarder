@@ -132,4 +132,8 @@ def hoard():
     print("-" * 30 + "\nDone!")
 
 if __name__ == "__main__":
-    hoard()
+    try:
+        hoard()
+    except KeyboardInterrupt:
+        print("\nInterrupted by user.")
+        sys.exit(130)
