@@ -40,7 +40,7 @@ def get_args():
     parser.add_argument("--dry-run", action="store_true", help="Print commands only")
     return parser.parse_args()
 
-def main():
+def hoard():
     args = get_args()
     plugin_dir = os.path.abspath(args.outdir)
 
@@ -132,4 +132,4 @@ def main():
     print("-" * 30 + "\nDone!")
 
 if __name__ == "__main__":
-    main()
+    hoard()
