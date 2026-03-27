@@ -9,11 +9,11 @@ list-plugins = "python nf_plugin_hoarder_modern.py --help"
 
 [dependencies]
 python = ">=3.11"
+packaging = ">=23.0"
 
 # --- LEGACY FEATURE (Older Nextflow and static JSON) ---
 [feature.legacy.dependencies]
 nextflow = "<=25.04.6"
-packaging = ">=23.0"
 
 [feature.legacy.tasks]
 hoard = "python nf_plugin_hoarder_pre25.10.py"

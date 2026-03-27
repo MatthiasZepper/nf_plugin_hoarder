@@ -26,7 +26,7 @@ PLUGINS_URL = "https://raw.githubusercontent.com/nextflow-io/plugins/main/plugin
 DEFAULT_PLUGINS = ["nf-co2footprint","nf-hello", "nf-prov", "nf-schema", "nf-tower","nf-wave"]
 
 def get_args():
-    parser = argparse.ArgumentParser(description="Cache Nextflow plugins for offline use.")
+    parser = argparse.ArgumentParser(description="🐿️ nf-plugin-hoarder: Cache Nextflow plugins for offline use.")
     parser.add_argument("-p", "--plugins", nargs="+", default=DEFAULT_PLUGINS,
                         help=f"Plugin IDs (default: {' '.join(DEFAULT_PLUGINS)})")
     parser.add_argument("-o", "--outdir", default="./nxf-plugin-cache",
@@ -135,5 +135,5 @@ if __name__ == "__main__":
     try:
         hoard()
     except KeyboardInterrupt:
-        print("\nInterrupted by user.")
+        print("\n\nStopped by user. See you later, hoarder!")
         sys.exit(130)
